@@ -1,0 +1,13 @@
+.metadata
+.settings
+target
+build
+RemoteSystemsTempFiles
+.classpath
+.factorypath
+*~
+nbactions.xml
+*.log
+.DS_Store
+*.iml
+.idea
