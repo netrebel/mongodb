@@ -1,4 +1,4 @@
-package com.tengen;
+package com.miguel;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -7,7 +7,6 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +25,7 @@ public class HelloWorldSparkFreemarkerStyle {
         final Configuration configuration = new Configuration();
         configuration.setClassForTemplateLoading(HelloWorldSparkFreemarkerStyle.class, "/");
 
-        Spark.get(new Route("/") {
+        Spark.get("/", new Route() {
             @Override
             public Object handle(final Request request, final Response response) {
                 StringWriter writer = new StringWriter();

@@ -1,4 +1,4 @@
-package com.tengen;
+package com.miguel;
 
 import spark.Request;
 import spark.Response;
@@ -15,10 +15,10 @@ import spark.Spark;
 public class HelloWorldSparkStyle {
 
     public static void main(String[] args) {
-        Spark.get(new Route("/") {
+        Spark.get("/", new Route() {
             @Override
-            public Object handle(Request request, Response response) {
-                return "Hello from Spark";
+            public Object handle(Request request, Response response) throws Exception {
+                return "Hello World from Spark";
             }
         });
     }

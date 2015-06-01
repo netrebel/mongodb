@@ -1,6 +1,9 @@
-package com.tengen;
+package com.miguel;
 
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import org.slf4j.Logger;
@@ -11,7 +14,6 @@ import spark.Route;
 import spark.Spark;
 
 import java.io.StringWriter;
-import java.net.UnknownHostException;
 
 /**
  * Dazoo project
@@ -29,16 +31,16 @@ public class HelloWorldMongoDBSparkFreemarkerStyle {
         final Configuration configuration = new Configuration();
         configuration.setClassForTemplateLoading(HelloWorldSparkFreemarkerStyle.class, "/");
 
-        final DBCollection collection = getDbCollection();
+        final MongoCollection<BasicDBObject> collection = getDbCollection();
 
-        Spark.get(new Route("/") {
+        Spark.get("/", new Route() {
             @Override
             public Object handle(final Request request, final Response response) {
                 LOG.debug("Handling all requests to /");
                 StringWriter writer = new StringWriter();
                 try {
                     Template helloTemplate = configuration.getTemplate("hello.ftl");
-                    DBObject document = collection.findOne();
+                    BasicDBObject document = collection.find().first();
                     helloTemplate.process(document, writer);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -48,17 +50,13 @@ public class HelloWorldMongoDBSparkFreemarkerStyle {
         });
     }
 
-    private static DBCollection getDbCollection() {
+    private static MongoCollection<BasicDBObject> getDbCollection() {
         MongoClient client = null;
-        try {
-            client = new MongoClient(new ServerAddress("localhost"));
-            LOG.debug("Connected to MongoDB");
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        client = new MongoClient("localhost");
+        LOG.debug("Connected to MongoDB");
 
-        DB test = client.getDB("test");
-        return test.getCollection("things");
+        MongoDatabase test = client.getDatabase("test");
+        return test.getCollection("things", BasicDBObject.class);
     }
 
 
