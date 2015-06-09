@@ -1,9 +1,9 @@
 package com.miguel;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 
 import java.net.UnknownHostException;
 
@@ -21,9 +21,9 @@ public class HelloWorldMongoDBStyle {
         MongoClient client = new MongoClient("localhost");
 
         MongoDatabase test = client.getDatabase("test");
-        MongoCollection<BasicDBObject> things = test.getCollection("things", BasicDBObject.class);
+        MongoCollection<Document> things = test.getCollection("things");
 
-        BasicDBObject first = things.find().first();
+        Document first = things.find().first();
         System.out.println(first);
 
     }
