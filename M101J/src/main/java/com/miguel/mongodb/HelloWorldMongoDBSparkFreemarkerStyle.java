@@ -1,11 +1,12 @@
-package com.miguel;
+package com.miguel.mongodb;
 
-import com.mongodb.BasicDBObject;
+import com.miguel.HelloWorldSparkFreemarkerStyle;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
@@ -31,7 +32,7 @@ public class HelloWorldMongoDBSparkFreemarkerStyle {
         final Configuration configuration = new Configuration();
         configuration.setClassForTemplateLoading(HelloWorldSparkFreemarkerStyle.class, "/");
 
-        final MongoCollection<BasicDBObject> collection = getDbCollection();
+        final MongoCollection<Document> collection = getDbCollection();
 
         Spark.get("/", new Route() {
             @Override
@@ -40,7 +41,7 @@ public class HelloWorldMongoDBSparkFreemarkerStyle {
                 StringWriter writer = new StringWriter();
                 try {
                     Template helloTemplate = configuration.getTemplate("hello.ftl");
-                    BasicDBObject document = collection.find().first();
+                    Document document = collection.find().first();
                     helloTemplate.process(document, writer);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -50,13 +51,13 @@ public class HelloWorldMongoDBSparkFreemarkerStyle {
         });
     }
 
-    private static MongoCollection<BasicDBObject> getDbCollection() {
+    private static MongoCollection<Document> getDbCollection() {
         MongoClient client = null;
         client = new MongoClient("localhost");
         LOG.debug("Connected to MongoDB");
 
         MongoDatabase test = client.getDatabase("test");
-        return test.getCollection("things", BasicDBObject.class);
+        return test.getCollection("things", Document.class);
     }
 
 

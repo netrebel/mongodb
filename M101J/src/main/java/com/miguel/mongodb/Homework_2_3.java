@@ -1,9 +1,11 @@
-package com.miguel;
+package com.miguel.mongodb;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
 import org.bson.Document;
 
 import java.net.UnknownHostException;
@@ -25,11 +27,6 @@ public class Homework_2_3 {
             Document projection = new Document()
                     .append("student_id", 1);
 
-            Document sort = new Document()
-                    .append("student_id", 1)
-                    .append("score", 1);
-
-
             DistinctIterable<Double> student_id = gradesCollection.distinct("student_id", Double.class);
             for (double studentId : student_id) {
                 System.out.println("Student with studentId: " + studentId);
@@ -38,12 +35,13 @@ public class Homework_2_3 {
                         .append("type", "homework");
 
                 Document first = gradesCollection.find(query)
-                        .sort(sort)
+                        .sort(Sorts.ascending("student_id", "score"))
+//                        .projection(Projections.fields(projection))
                         .first();
 
                 System.out.println("Delete studentId: " + first.getDouble("student_id") + " and score " + first.getDouble("score"));
 
-                gradesCollection.deleteOne(first);
+//                gradesCollection.deleteOne(first);
 
             }
 

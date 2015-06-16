@@ -1,4 +1,4 @@
-package com.miguel;
+package com.miguel.mongodb;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
