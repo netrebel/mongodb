@@ -16,8 +16,6 @@
 
 package course;
 
-import com.mongodb.DB;
-import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
@@ -39,14 +37,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static spark.Spark.get;
-import static spark.Spark.post;
-import static spark.Spark.setPort;
+import static spark.Spark.*;
 
 /**
  * This class encapsulates the controllers for the blog web application.  It delegates all interaction with MongoDB
  * to three Data Access Objects (DAOs).
- * <p/>
+ * <p>
  * It is also the entry point into the web application.
  */
 public class BlogController {
@@ -58,8 +54,7 @@ public class BlogController {
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
             new BlogController("mongodb://localhost");
-        }
-        else {
+        } else {
             new BlogController(args[0]);
         }
     }
@@ -103,7 +98,7 @@ public class BlogController {
         }
 
         protected abstract void doHandle(final Request request, final Response response, final Writer writer)
-        throws IOException, TemplateException;
+                throws IOException, TemplateException;
 
     }
 
@@ -137,8 +132,7 @@ public class BlogController {
                 Document post = blogPostDAO.findByPermalink(permalink);
                 if (post == null) {
                     response.redirect("/post_not_found");
-                }
-                else {
+                } else {
                     // empty comment to hold new comment in form at bottom of blog entry detail page
                     SimpleHash newComment = new SimpleHash();
                     newComment.put("name", "");
@@ -164,7 +158,7 @@ public class BlogController {
                 String password = request.queryParams("password");
                 String verify = request.queryParams("verify");
 
-                HashMap<String, String> root = new HashMap<String, String>();
+                HashMap<String, String> root = new HashMap<>();
                 root.put("username", StringEscapeUtils.escapeHtml4(username));
                 root.put("email", StringEscapeUtils.escapeHtml4(email));
 
@@ -195,7 +189,7 @@ public class BlogController {
         get(new FreemarkerBasedRoute("/signup", "signup.ftl") {
             @Override
             protected void doHandle(Request request, Response response, Writer writer)
-            throws IOException, TemplateException {
+                    throws IOException, TemplateException {
 
                 SimpleHash root = new SimpleHash();
 
@@ -223,8 +217,7 @@ public class BlogController {
                     System.out.println("welcome() can't identify the user, redirecting to signup");
                     response.redirect("/signup");
 
-                }
-                else {
+                } else {
                     SimpleHash root = new SimpleHash();
 
                     root.put("username", username);
@@ -259,7 +252,7 @@ public class BlogController {
         post(new FreemarkerBasedRoute("/newpost", "newpost_template.ftl") {
             @Override
             protected void doHandle(Request request, Response response, Writer writer)
-            throws IOException, TemplateException {
+                    throws IOException, TemplateException {
 
                 String title = StringEscapeUtils.escapeHtml4(request.queryParams("subject"));
                 String post = StringEscapeUtils.escapeHtml4(request.queryParams("body"));
@@ -269,18 +262,16 @@ public class BlogController {
 
                 if (username == null) {
                     response.redirect("/login");    // only logged in users can post to blog
-                }
-                else if (title.equals("") || post.equals("")) {
+                } else if (title.equals("") || post.equals("")) {
                     // redisplay page with errors
-                    HashMap<String, String> root = new HashMap<String, String>();
+                    HashMap<String, String> root = new HashMap<>();
                     root.put("errors", "post must contain a title and blog entry.");
                     root.put("subject", title);
                     root.put("username", username);
                     root.put("tags", tags);
                     root.put("body", post);
                     template.process(root, writer);
-                }
-                else {
+                } else {
                     // extract tags
                     ArrayList<String> tagsArray = extractTags(tags);
 
@@ -306,8 +297,7 @@ public class BlogController {
                     System.out.println("welcome() can't identify the user, redirecting to signup");
                     response.redirect("/signup");
 
-                }
-                else {
+                } else {
                     SimpleHash root = new SimpleHash();
 
                     root.put("username", username);
@@ -321,7 +311,7 @@ public class BlogController {
         post(new FreemarkerBasedRoute("/newcomment", "entry_template.ftl") {
             @Override
             protected void doHandle(Request request, Response response, Writer writer)
-            throws IOException, TemplateException {
+                    throws IOException, TemplateException {
                 String name = StringEscapeUtils.escapeHtml4(request.queryParams("commentName"));
                 String email = StringEscapeUtils.escapeHtml4(request.queryParams("commentEmail"));
                 String body = StringEscapeUtils.escapeHtml4(request.queryParams("commentBody"));
@@ -385,15 +375,13 @@ public class BlogController {
 
                     if (sessionID == null) {
                         response.redirect("/internal_error");
-                    }
-                    else {
+                    } else {
                         // set the cookie for the user's browser
                         response.raw().addCookie(new Cookie("session", sessionID));
 
                         response.redirect("/welcome");
                     }
-                }
-                else {
+                } else {
                     SimpleHash root = new SimpleHash();
 
 
@@ -425,8 +413,7 @@ public class BlogController {
                 if (sessionID == null) {
                     // no session to end
                     response.redirect("/login");
-                }
-                else {
+                } else {
                     // deletes from session table
                     sessionDAO.endSession(sessionID);
 
@@ -491,7 +478,7 @@ public class BlogController {
         String tagArray[] = tags.split(",");
 
         // let's clean it up, removing the empty string and removing dups
-        ArrayList<String> cleaned = new ArrayList<String>();
+        ArrayList<String> cleaned = new ArrayList<>();
         for (String tag : tagArray) {
             if (!tag.equals("") && !cleaned.contains(tag)) {
                 cleaned.add(tag);
