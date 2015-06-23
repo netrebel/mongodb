@@ -40,6 +40,15 @@ public class BlogPostDAO {
         return posts;
     }
 
+    public List<Document> findByTagDateDescending(final String tag) {
+        final List<Document> posts = new ArrayList<>();
+        Document query = new Document("tags", tag);
+        System.out.println("/tag query: " + query.toString());
+        FindIterable<Document> results = postsCollection.find(query).sort(new Document().append("date", -1)).limit(10);
+
+        results.forEach((Block<Document>) posts::add);
+        return posts;
+    }
 
     public String addPost(String title, String body, List tags, String username) {
 
@@ -59,16 +68,18 @@ public class BlogPostDAO {
                 .append("comments", new ArrayList<>())
                 .append("date", new Date())
         ;
-        postsCollection.insertOne(post);
+
+        try {
+            postsCollection.insertOne(post);
+            System.out.println("Inserting blog post with permalink " + permalink);
+        } catch (Exception e) {
+            System.out.println("Error inserting post");
+            return null;
+        }
 
         return permalink;
     }
 
-
-    // White space to protect the innocent
-
-
-    // Append a comment to a blog post
     public void addPostComment(final String name, final String email, final String body,
                                final String permalink) {
 
@@ -86,4 +97,5 @@ public class BlogPostDAO {
         update.append("$push", new Document("comments", comment));
         postsCollection.updateOne(query, update);
     }
+
 }

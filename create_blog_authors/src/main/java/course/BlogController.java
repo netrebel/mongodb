@@ -206,28 +206,6 @@ public class BlogController {
             }
         });
 
-        get(new FreemarkerBasedRoute("/welcome", "welcome.ftl") {
-            @Override
-            protected void doHandle(Request request, Response response, Writer writer) throws IOException, TemplateException {
-
-                String cookie = getSessionCookie(request);
-                String username = sessionDAO.findUserNameBySessionId(cookie);
-
-                if (username == null) {
-                    System.out.println("welcome() can't identify the user, redirecting to signup");
-                    response.redirect("/signup");
-
-                } else {
-                    SimpleHash root = new SimpleHash();
-
-                    root.put("username", username);
-
-                    template.process(root, writer);
-                }
-            }
-        });
-
-
         // will present the form used to process new blog posts
         get(new FreemarkerBasedRoute("/newpost", "newpost_template.ftl") {
             @Override
@@ -390,6 +368,27 @@ public class BlogController {
                     root.put("login_error", "Invalid Login");
                     template.process(root, writer);
                 }
+            }
+        });
+
+        // Show the posts filed under a certain tag
+        get(new FreemarkerBasedRoute("/tag/:thetag", "blog_template.ftl") {
+            @Override
+            protected void doHandle(Request request, Response response, Writer writer)
+                    throws IOException, TemplateException {
+
+                String username = sessionDAO.findUserNameBySessionId(getSessionCookie(request));
+                SimpleHash root = new SimpleHash();
+
+                String tag = StringEscapeUtils.escapeHtml4(request.params(":thetag"));
+                List<Document> posts = blogPostDAO.findByTagDateDescending(tag);
+
+                root.put("myposts", posts);
+                if (username != null) {
+                    root.put("username", username);
+                }
+
+                template.process(root, writer);
             }
         });
 

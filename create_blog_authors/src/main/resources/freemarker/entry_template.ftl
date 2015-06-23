@@ -22,7 +22,7 @@ ${post["body"]}
     <em>Filed Under</em>:
     <#if post["tags"]??>
         <#list post["tags"] as tag>
-            ${tag}
+            <a href="/tag/${tag}">${tag}</a>
         </#list>
     </#if>
 <p>
@@ -35,8 +35,6 @@ ${post["body"]}
     </#if>
     <#if (numComments > 0)>
         <#list 0 .. (numComments -1) as i>
-
-                Author: ${post["comments"][i]["author"]}<br>
             <br>
             ${post["comments"][i]["body"]}<br>
             <hr>
