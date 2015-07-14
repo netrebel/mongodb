@@ -1,101 +1,106 @@
+/*
+ * Copyright 2013-2015 MongoDB Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package course;
 
-import com.mongodb.Block;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.MongoCollection;
+
 import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Sorts.descending;
+
 public class BlogPostDAO {
-    MongoCollection<Document> postsCollection;
+    private final MongoCollection<Document> postsCollection;
 
     public BlogPostDAO(final MongoDatabase blogDatabase) {
         postsCollection = blogDatabase.getCollection("posts");
     }
 
-    // Return a single post corresponding to a permalink
     public Document findByPermalink(String permalink) {
-        Document query = new Document();
-        query.append("permalink", permalink);
-        return postsCollection.find(query).first();
+        Document post = postsCollection.find(eq("permalink", permalink)).first();
+
+        // fix up if a post has no likes
+        if (post != null) {
+            List<Document> comments = (List<Document>) post.get("comments");
+            for (Document comment : comments) {
+                if (!comment.containsKey("num_likes")) {
+                    comment.put("num_likes", 0);
+                }
+            }
+        }
+        return post;
     }
 
-    // Return a list of posts in descending order. Limit determines
-    // how many posts are returned.
     public List<Document> findByDateDescending(int limit) {
-
-        // Return a list of DBObjects, each one a post from the posts collection
-        final List<Document> posts = new ArrayList<>();
-
-        FindIterable<Document> results = postsCollection.find()
-                .sort(Sorts.descending("date"))
-                .limit(limit);
-
-        results.forEach((Block<Document>) posts::add);
-        return posts;
+        return postsCollection.find().sort(descending("date"))
+                .limit(limit)
+                .into(new ArrayList<>());
     }
 
     public List<Document> findByTagDateDescending(final String tag) {
-        final List<Document> posts = new ArrayList<>();
-        Document query = new Document("tags", tag);
-        System.out.println("/tag query: " + query.toString());
-        FindIterable<Document> results = postsCollection.find(query).sort(new Document().append("date", -1)).limit(10);
-
-        results.forEach((Block<Document>) posts::add);
-        return posts;
+        return postsCollection.find(eq("tags", tag))
+                .sort(descending("date"))
+                .limit(10)
+                .into(new ArrayList<>());
     }
 
     public String addPost(String title, String body, List tags, String username) {
-
-        System.out.println("inserting blog entry " + title + " " + body);
-
         String permalink = title.replaceAll("\\s", "_"); // whitespace becomes _
         permalink = permalink.replaceAll("\\W", ""); // get rid of non alphanumeric
         permalink = permalink.toLowerCase();
 
-        // Build the post object and insert it
-        Document post = new Document();
-        post.append("author", username)
-                .append("title", title)
+        Document post = new Document("title", title)
+                .append("author", username)
                 .append("body", body)
                 .append("permalink", permalink)
                 .append("tags", tags)
-                .append("comments", new ArrayList<>())
-                .append("date", new Date())
-        ;
+                .append("comments", new ArrayList())
+                .append("date", new Date());
 
-        try {
-            postsCollection.insertOne(post);
-            System.out.println("Inserting blog post with permalink " + permalink);
-        } catch (Exception e) {
-            System.out.println("Error inserting post");
-            return null;
-        }
+        postsCollection.insertOne(post);
 
         return permalink;
     }
 
-    public void addPostComment(final String name, final String email, final String body,
-                               final String permalink) {
-
-        Document comment = new Document();
-        comment.append("author", name)
+    public void addPostComment(final String name, final String email, final String body, final String permalink) {
+        Document comment = new Document("author", name)
                 .append("body", body);
 
         if (email != null && !email.isEmpty()) {
             comment.append("email", email);
         }
 
-        Document blogPost = findByPermalink(permalink);
-        Document query = new Document("_id", blogPost.getObjectId("_id"));
-        Document update = new Document();
-        update.append("$push", new Document("comments", comment));
-        postsCollection.updateOne(query, update);
+        postsCollection.updateOne(eq("permalink", permalink),
+                new Document("$push", new Document("comments", comment)));
     }
 
+    public void likePost(final String permalink, final int ordinal) {
+        //
+        //
+        // TODO Final Question 4 - work here
+        // You must increment the number of likes on the comment in position `ordinal`
+        // on the post identified by `permalink`.
+        //
+        //
+    }
 }
