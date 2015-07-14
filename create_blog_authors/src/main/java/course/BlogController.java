@@ -427,6 +427,7 @@ public class BlogController {
 
                     response.redirect("/post/" + permalink);
                 }
+
             }
         });
 
